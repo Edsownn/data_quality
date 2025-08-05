@@ -10,25 +10,24 @@ from app.contrato import MetricasSetores
 def test_contrato_correto():
     df_test = pd.DataFrame({
         "Cod Setor": [1, 2, 3],
-        "Nome Setor": ["Administratico", "Obras", "Operacional"],
-        "CNPJ da Empresa": ["12.345.678/0001-90", "98.765.432/0001-55", "32.165.498/0001-77"]
+        "Nome setor": ["Administratico", "Obras", "Operacional"],
+        "CNPJ da empresa": ["12.345.678/0001-90", "98.765.432/0001-55", "32.165.498/0001-77"]
     })
-
     MetricasSetores.validate(df_test)
 
 def test_contrato_incorreto():
     df_test = pd.DataFrame({
         "Cod Setor": [1, 2, "três"],
-        "Nome Setor": ["Administratico", "Obras", 123],
-        "CNPJ da Empresa": ["12.345.678/0001-90", "98.765.432/0001-55", "32.165.498/0001-77"]
+        "Nome setor": ["Administratico", "Obras", 123],
+        "CNPJ da empresa": ["12.345.678/0001-90", "98.765.432/0001-55", "32.165.498/0001-77"]
     })
-
-    MetricasSetores.validate(df_test)
+    with pytest.raises(pa.errors.SchemaError):
+        MetricasSetores.validate(df_test)
 
 def test_coluna_faltando():
     df_test = pd.DataFrame({
         "Cod Setor": [1, 2, 3],
-        "Nome Setor": ["Administratico", "Obras", "Operacional"]
+        "Nome setor": ["Administratico", "Obras", "Operacional"]
     })
-
-    MetricasSetores.validate(df_test)
+    with pytest.raises(pa.errors.SchemaError):
+        MetricasSetores.validate(df_test)
