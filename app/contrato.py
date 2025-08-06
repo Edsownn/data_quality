@@ -18,8 +18,8 @@ class MetricasSetores(pa.DataFrameModel):
 
     @pa.check("Nome setor", name = "Checagem de nome do setor", error = "Nome do setor nao pode ser vazio e maximo 200 caracteres")
     def nome_setor(cls, series: Series[str]) -> Series[bool]:
-        return (series.str.len() > 0) & (series.str.len() <= 200)
+        return series.notnull() & (series.str.strip().str.len() > 0) & (series.str.len() <= 200)
 
-    @pa.check("CNPJ da empresa", name = "Checagem de CNPJ", error = "CNPJ deve ter 18 caracteres e formato valido XX.XXX.XXX/0001-XX")
+    @pa.check("CNPJ da empresa", name = "Checagem de CNPJ", error = "CNPJ deve ter 18 caracteres e formato valido XX.XXX.XXX/XXXX-XX")
     def cnpj_empresa_valido(cls, series: Series[str]) -> Series[bool]:
         return (series.str.len() == 18) & (series.str.match(r"^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$"))

@@ -1,5 +1,4 @@
 import pandas as pd
-import janitor as jn
 import pandera.pandas as pa
 from contrato import MetricasSetores
 
@@ -11,7 +10,10 @@ def extrai_dados(dir_arquivos: pd.DataFrame) -> pd.DataFrame:
         return df
     except pa.errors.SchemaErrors as e:
         print("Erros de validação encontrados:")
-        print(e)
+        for error in e.failure_cases.itertuples():
+            print(f"- Coluna: {error.column}, Erro: {error.failure_case}, {error.check}")
+    except Exception as e:
+        print(f"Erro inesperado: {e}")
 
     return df
 
