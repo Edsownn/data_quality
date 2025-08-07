@@ -1,7 +1,6 @@
-
 # data-quality
 
-Projeto para validação de dados de setores de empresas utilizando Pandas, Pandera e PyJanitor.
+Projeto para validação de dados de setores de empresas utilizando Pandas, Pandera, PyJanitor e Streamlit.
 
 ## Estrutura do Projeto
 
@@ -11,7 +10,10 @@ pyproject.toml
 README.md
 uv.lock
 app/
-    app.py
+    core/
+        schemas.py 
+        util.py
+    aplicacao.py
     contrato.py
     __init__.py
 data/
@@ -25,6 +27,7 @@ tests/
 - [Pandas](https://pandas.pydata.org/): Manipulação de dados
 - [Pandera](https://pandera.readthedocs.io/): Validação de DataFrames
 - [PyJanitor](https://pyjanitor-devs.github.io/pyjanitor/): Limpeza de dados
+- [Streamlit](https://streamlit.io/): Interface web para upload e validação de planilhas
 - [pytest](https://pytest.org/): Testes automatizados
 - [uv](https://github.com/astral-sh/uv): Gerenciamento de ambiente e dependências
 
@@ -37,40 +40,33 @@ tests/
    ```
 2. Crie e ative o ambiente virtual com uv:
    ```powershell
-   uv venv .venv ; .\.venv\Scripts\Activate.ps1
+   uv venv .venv
+   .\.venv\Scripts\Activate.ps1
    ```
 3. Instale as dependências:
    ```powershell
-   uv pip install -r uv.lock
+   uv pip install -r requirements.txt
    ```
 
 ## Uso
 
-Execute o script principal:
-```powershell
-uv run python main.py
-```
-Ou rode diretamente os scripts em `app/` conforme necessidade.
+### Rodar a aplicação web (Streamlit)
 
+Para iniciar a interface web para upload e validação de planilhas:
+```powershell
+streamlit run app/aplicacao.py
+```
+
+ou no back end
+
+```powershell
+python app\app.py
+```
 ## Testes
 
 Para rodar os testes automatizados:
 ```powershell
-uv run pytest
-```
-
-## Exemplo de Validação
-
-O modelo de validação está em `app/contrato.py`:
-```python
-class MetricasSetores(pa.DataFrameModel):
-    CodSetor: Series[int] = pa.Field(alias="Cod Setor")
-    NomeSetor: Series[str] = pa.Field(alias="Nome Setor")
-    cnpjEmpresa: Series[str] = pa.Field(alias="CNPJ da Empresa")
-
-    class Config:
-        coerce = True
-        strict = True
+pytest
 ```
 
 ## Licença
