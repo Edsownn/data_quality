@@ -1,12 +1,12 @@
 import pandas as pd
 import pandera.pandas as pa
-from contrato import MetricasSetores
+from contrato import metricas_setores
 
 def extrai_dados(dir_arquivos: pd.DataFrame) -> pd.DataFrame:
     df = pd.read_excel(dir_arquivos, sheet_name="Setores")
     
     try:
-        df = MetricasSetores.validate(df, lazy=True)
+        df = metricas_setores.validate(df, lazy=True)
         return df
     except pa.errors.SchemaErrors as e:
         print("Erros de validação encontrados:")
