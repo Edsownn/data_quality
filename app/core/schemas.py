@@ -29,4 +29,225 @@ metricas_setores = pa.DataFrameSchema({
         ],
         nullable=False
     ),
-})
+},
+    strict=True, 
+    coerce=True
+)
+
+metricas_cargos = pa.DataFrameSchema({
+    "cod_cargo": pa.Column(
+        pa.Int,
+        checks=[
+            #pa.Check(lambda s: s.notnull(), error="Cod Cargo não pode ser nulo"),
+            pa.Check(lambda s: s > 0, error="Cod Cargo deve ser maior que zero"),
+        ],
+        nullable=False
+    ),
+    "cod_cbo": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 15), error="Cod CBO não pode ser vazio e deve ter até 15 caracteres"),
+        ],
+        nullable=True
+    ),
+    "nome_cargo": pa.Column(
+        pa.String,
+        checks=[
+            #pa.Check(lambda s: s.notnull(), error="Nome Cargo não pode ser nulo"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 30), error="Nome Cargo não pode ser vazio e deve ter até 30 caracteres"),
+        ],
+        nullable=False
+    ),
+    "descricao_detalhada_do_cargo": pa.Column(
+        pa.String,
+        checks=[
+            #pa.Check(lambda s: s.notnull(), error="Descrição detalhada do cargo não pode ser nula"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 1000), error="Descrição detalhada do cargo não pode ser vazia e deve ter até 1000 caracteres"),
+        ],
+        nullable=False
+    )
+},
+    strict=True,
+    coerce=True
+)
+
+metricas_empresas = pa.DataFrameSchema({
+    "cod_empresa": pa.Column(
+        pa.Int,
+        checks=[
+            pa.Check(lambda s: s.astype(str).str.strip().str.len().between(1, 10), error="Cod Empresa não pode ser vazio e deve ter até 10 caracteres"),
+            pa.Check(lambda s: s > 0, error="Cod Empresa deve ser maior que zero"),
+        ],
+        nullable=True
+    ),
+    "nome_empresa": pa.Column(
+        pa.String,
+        checks=[
+            #pa.Check(lambda s: s.notnull(), error="Nome Empresa não pode ser nulo"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 60), error="Nome Empresa não pode ser vazio e deve ter até 60 caracteres"),
+        ],
+        nullable=False
+    ),
+    "cnae_7": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.notnull(), error="CNAE 7 não pode ser nulo"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="CNAE 7 deve ter ate 10 caracteres"),
+            pa.Check.str_matches((r'^\d{2}\.\d{2}-\d(?:/\d{2})?$'), error="CNAE 7 deve estar no formato XX.XX-X ou XX.XX-X/XX"),
+        ],
+        nullable=False
+    ),
+    "cnpj_empresa": pa.Column(
+        pa.String,
+        checks=[
+            #pa.Check(lambda s: s.notnull(), error="CNPJ Empresa não pode ser nulo"),
+            pa.Check(lambda s: s.str.len() == 18, error="CNPJ Empresa deve ter 18 caracteres"),
+            pa.Check.str_matches(r"^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$", error="CNPJ Empresa deve estar no formato XX.XXX.XXX/XXXX-XX"),
+        ],
+        nullable=False
+    ),
+    "razao_social": pa.Column(
+        pa.String,
+        checks=[
+            #pa.Check(lambda s: s.notnull(), error="Razão Social não pode ser nula"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 200), error="Razão Social não pode ser vazia e deve ter até 60 caracteres"),
+        ],
+        nullable=False
+    ),
+    "inscricao_unidade": pa.Column(
+        pa.String,
+        checks=[
+            #pa.Check(lambda s: s.notnull(), error="Inscrição Unidade não pode ser nula"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 200), error="Inscrição Unidade deve ter entre 1 e 200 caracteres"),
+            pa.Check.str_matches(r"^(\d{3}\.\d{3}\.\d{3}\.\d{3}\.\d{3} | \d{8})$", error="Inscrição Unidade deve estar no formato IE: XXX.XXX.XXX.XXX ou IM: XXXXXXXX"),
+        ],
+        nullable=False
+    ),
+    "cnpj_da_matriz": pa.Column(
+        pa.String,
+        checks=[
+            #pa.Check(lambda s: s.notnull(), error="CNPJ da Matriz não pode ser nulo"),
+            pa.Check(lambda s: s.str.len() == 18, error="CNPJ da Matriz deve ter 18 caracteres"),
+            pa.Check.str_matches(r"^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$", error="CNPJ da Matriz deve estar no formato XX.XXX.XXX/XXXX-XX"),
+        ],
+        nullable=False
+    ),
+    "endereco": pa.Column(
+        pa.String,
+        checks=[
+            #pa.Check(lambda s: s.notnull(), error="Endereço não pode ser nulo"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 110), error="Endereço não pode ser vazio e deve ter até 110 caracteres"),
+        ],
+        nullable=False
+    ),
+    "numero": pa.Column(
+        pa.Int,
+        checks=[
+            pa.Check(lambda s: s.astype(str).str.strip().str.len().between(1, 10), error="numero não pode ser vazio e deve ter até 10 caracteres"),
+            pa.Check(lambda s: s > 0, error="numero deve ser maior que zero"),
+        ],
+        nullable=False
+    ),
+    "bairro": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 80), error="Bairro não pode ser vazio e deve ter até 80 caracteres"),
+        ],
+        nullable=False
+    ),
+    "cidade": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 60), error="Cidade não pode ser vazia e deve ter até 60 caracteres"),
+        ],
+        nullable=False
+    ),
+    "uf": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 5), error="UF deve ter entre 1 e 5 caracteres"),
+        ],
+        nullable=False
+    ),
+    "cep": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len() == 10, error="CEP deve ter exatamente 10 caracteres"),
+            pa.Check.str_matches(r"^\d{5}-\d{3}$", error="CEP deve estar no formato XXXXX-XXX"),
+        ],
+        nullable=False
+    ),
+    "telefone": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1,25), error="Telefone deve ter entre 1 e 25 caracteres"),
+            pa.Check.str_matches(r"^\(\d{2}\) \d{5}-\d{4}$", error="Telefone deve estar no formato (XX) XXXXX-XXXX"),
+        ],
+        nullable=True
+    )
+},
+    strict=True,
+    coerce=True
+)
+
+metricas_funcionarios = pa.DataFrameSchema({
+    "cnpj_empresa": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.len() == 18, error="CNPJ Empresa deve ter 18 caracteres"),
+            pa.Check.str_matches(r"^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$", error="CNPJ Empresa deve estar no formato XX.XXX.XXX/XXXX-XX"),
+        ],
+        nullable=False
+    ),
+    "cod_setor":pa.Column(
+        pa.Int,
+        checks=[
+            pa.Check(lambda s: s.astype(str).str.strip().str.len().between(1, 10), error="Cod Setor não pode ser vazio e deve ter até 10 caracteres"),
+            pa.Check(lambda s: s > 0, error="Cod Setor deve ser maior que zero"),
+        ],
+        nullable=False
+    ),
+    "cod_cargo":pa.Column(
+        pa.Int,
+        checks=[
+            pa.Check(lambda s: s.astype(str).str.strip().str.len().between(1, 10), error="Cod Cargo não pode ser vazio e deve ter até 10 caracteres"),
+            pa.Check(lambda s: s > 0, error="Cod Cargo deve ser maior que zero"),
+        ],
+        nullable=False
+    ),
+    "cod_funcionario":pa.Column(
+        pa.Int,
+        checks=[
+            pa.Check(lambda s: s.astype(str).str.strip().str.len().between(1, 10), error="Cod Funcionario não pode ser vazio e deve ter até 10 caracteres"),
+            pa.Check(lambda s: s > 0, error="Cod Funcionario deve ser maior que zero"),
+        ],
+        nullable=False
+    ),
+    "cpf":pa.Column(
+        pa.String,
+        checks=[
+            #pa.Check(lambda s: s.notnull(), error="CPF não pode ser nulo"),
+            pa.Check(lambda s: s.str.len() == 14, error="CPF deve ter 14 caracteres"),
+            pa.Check.str_matches(r"^\d{3}\.\d{3}\.\d{3}-\d{2}$", error="CPF deve estar no formato XXX.XXX.XXX-XX"),
+        ],
+        nullable=False
+    ),
+    "nome_funcionario":pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 150), error="Nome Funcionario não pode ser vazio e deve ter até 150 caracteres"),
+        ],
+        nullable=False
+    ),
+    "nome_social":pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 150), error="Nome Social não pode ser vazio e deve ter até 150 caracteres"),
+        ],
+        nullable=True
+    ),
+    
+},
+    strict=True,
+    coerce=True
+)
