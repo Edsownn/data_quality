@@ -1,3 +1,4 @@
+import pandas as pd
 import pandera as pa
 
 metricas_setores = pa.DataFrameSchema({
@@ -246,7 +247,177 @@ metricas_funcionarios = pa.DataFrameSchema({
         ],
         nullable=True
     ),
-    
+    "dt_nascimento": pa.Column(
+        pa.Date,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="Data de Nascimento deve ter 10 caracteres"),
+            pa.Check(lambda s: s > pd.Timestamp("1900-01-01"), error="Data de Nascimento deve ser posterior a 01/01/1900"),
+            pa.Check(lambda s: s < pd.Timestamp.now(), error="Data de Nascimento deve ser anterior a data atual"),
+        ],
+        nullable=False
+    ),
+    "sexo": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 1), error="Sexo deve ter exatamente 1 caractere"),
+            pa.Check.str_matches(r"^(M|F|m|f)$", error="Sexo deve ser M, F"),
+        ],
+        nullable=False
+    ),
+    "situacao": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 20), error="Situação deve ter até 20 caracteres"),
+            pa.Check.str_matches(r"^(ativo|inativo|afastado)$", error="Situação deve ser Ativo, Inativo ou Afastado"),
+        ],
+        nullable=False
+    ),
+    "dt_admissao": pa.Column(
+        pa.Date,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="Data de Admissão deve ter 10 caracteres"),
+            pa.Check(lambda s: s > pd.Timestamp("1900-01-01"), error="Data de Admissão deve ser posterior a 01/01/1900"),
+            pa.Check(lambda s: s < pd.Timestamp.now(), error="Data de Admissão deve ser anterior a data atual"),
+        ],
+        nullable=False
+    ),
+    "matricula_esocial": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 30), error="Matrícula eSocial deve ter até 30 caracteres"),
+        ],
+        nullable=False
+    ),
+    "matricula_rh": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 50), error="Matrícula RH deve ter até 50 caracteres"),
+        ],
+        nullable=False
+    ),
+    "codigo_categoria_esocial": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 8), error="Código da Categoria eSocial deve ter até 8 caracteres"),
+        ],
+        nullable=False
+    ),
+    "trabalho_em_altura": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str_matches(r"^(sim|nao)$"), error="Trabalho em Altura deve ser sim ou não"),
+        ],
+        nullable=True
+    ),
+    "dt_demissao": pa.Column(
+        pa.Date,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="Data de Demissão deve ter 10 caracteres"),
+            pa.Check(lambda s: s > pd.Timestamp("1900-01-01"), error="Data de Demissão deve ser posterior a 01/01/1900"),
+            pa.Check(lambda s: s < pd.Timestamp.now(), error="Data de Demissão deve ser anterior a data atual"),
+        ],
+        nullable=True
+    ),
+    "pis_pasep": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 25), error="PIS/PASEP deve ter até 14 caracteres"),
+        ],
+        nullable=True
+    ),
+    "rg": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 12), error="RG deve ter até 12 caracteres"),
+        ],
+        nullable=True
+    ),
+    "uf_do_rg":pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 2), error="UF do RG deve ter até 2 caracteres"),
+        ],
+        nullable=True
+    ),
+    "emissor_rg": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 30), error="Emissor do RG deve ter até 30 caracteres"),
+        ],
+        nullable=True
+    ),
+    "ctps": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 60), error="CTPS deve ter até 60 caracteres"),
+        ],
+        nullable=True
+    ),
+    "serie_ctps": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 60), error="Série CTPS deve ter até 60 caracteres"),
+        ],
+        nullable=True
+    ),
+    "uf_ctps": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 60), error="UF da CTPS deve ter até 2 caracteres"),
+        ],
+        nullable=True
+    ),
+    "endereco": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 60), error="Endereço deve ter até 60 caracteres"),
+        ],
+        nullable=True
+    ),
+    "numero": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 60), error="Número deve ter até 60 caracteres"),
+        ],
+        nullable=True
+    ),
+    "bairro": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 60), error="Bairro deve ter até 60 caracteres"),
+        ],
+        nullable=True
+    ),
+    "cidade": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 60), error="Cidade deve ter até 60 caracteres"),
+        ],
+        nullable=True
+    ),
+    "uf": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 2), error="UF deve ter até 2 caracteres"),
+        ],
+        nullable=True
+    ),
+    "cep": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="CEP deve ter até 10 caracteres"),
+            pa.Check.str_matches(r"^\d{2}\.\d{3}-\d{3}$", error="CEP deve estar no formato XX.XXX-XXX"),
+        ],
+        nullable=False
+    ),
+    "celular": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 15), error="Celular deve ter até 15 caracteres"),
+            pa.Check.str_matches(r"^\(\d{2}\) \d{5}-\d{4}$", error="Celular deve estar no formato (XX) XXXXX-XXXX"),
+        ],
+        nullable=False
+    )
 },
     strict=True,
     coerce=True
