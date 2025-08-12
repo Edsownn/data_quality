@@ -81,7 +81,7 @@ metricas_empresas = pa.DataFrameSchema({
         ],
         nullable=True
     ),
-    "nome_empresa": pa.Column(
+    "nome_da_empresa": pa.Column(
         pa.String,
         checks=[
             #pa.Check(lambda s: s.notnull(), error="Nome Empresa não pode ser nulo"),
@@ -98,7 +98,7 @@ metricas_empresas = pa.DataFrameSchema({
         ],
         nullable=False
     ),
-    "cnpj_empresa": pa.Column(
+    "cnpj": pa.Column(
         pa.String,
         checks=[
             #pa.Check(lambda s: s.notnull(), error="CNPJ Empresa não pode ser nulo"),
@@ -115,12 +115,12 @@ metricas_empresas = pa.DataFrameSchema({
         ],
         nullable=False
     ),
-    "inscricao_unidade": pa.Column(
+    "inscricao": pa.Column(
         pa.String,
         checks=[
             #pa.Check(lambda s: s.notnull(), error="Inscrição Unidade não pode ser nula"),
             pa.Check(lambda s: s.str.strip().str.len().between(1, 200), error="Inscrição Unidade deve ter entre 1 e 200 caracteres"),
-            pa.Check.str_matches(r"^(\d{3}\.\d{3}\.\d{3}\.\d{3}\.\d{3} | \d{8})$", error="Inscrição Unidade deve estar no formato IE: XXX.XXX.XXX.XXX ou IM: XXXXXXXX"),
+            pa.Check.str_matches(r"^(\d{3}\.\d{3}\.\d{3}\.\d{3}|\d{8})$", error="Inscrição Unidade deve estar no formato IE: XXX.XXX.XXX.XXX ou IM: XXXXXXXX"),
         ],
         nullable=False
     ),
@@ -173,7 +173,7 @@ metricas_empresas = pa.DataFrameSchema({
     "cep": pa.Column(
         pa.String,
         checks=[
-            pa.Check(lambda s: s.str.strip().str.len() == 10, error="CEP deve ter exatamente 10 caracteres"),
+            pa.Check(lambda s: s.str.strip().str.len() == 9, error="CEP deve ter exatamente 9 caracteres"),
             pa.Check.str_matches(r"^\d{5}-\d{3}$", error="CEP deve estar no formato XXXXX-XXX"),
         ],
         nullable=False
@@ -182,7 +182,7 @@ metricas_empresas = pa.DataFrameSchema({
         pa.String,
         checks=[
             pa.Check(lambda s: s.str.strip().str.len().between(1,25), error="Telefone deve ter entre 1 e 25 caracteres"),
-            pa.Check.str_matches(r"^\(\d{2}\) \d{5}-\d{4}$", error="Telefone deve estar no formato (XX) XXXXX-XXXX"),
+            pa.Check.str_matches(r"^\(\d{2}\) \d{4,5}-\d{4}$", error="Telefone deve estar no formato (XX) XXXXX-XXXX"),
         ],
         nullable=True
     )
@@ -248,11 +248,10 @@ metricas_funcionarios = pa.DataFrameSchema({
         nullable=True
     ),
     "dt_nascimento": pa.Column(
-        pa.Date,
+        pa.DateTime,
         checks=[
-            pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="Data de Nascimento deve ter 10 caracteres"),
-            pa.Check(lambda s: s > pd.Timestamp("1900-01-01"), error="Data de Nascimento deve ser posterior a 01/01/1900"),
-            pa.Check(lambda s: s < pd.Timestamp.now(), error="Data de Nascimento deve ser anterior a data atual"),
+        pa.Check(lambda s: s.gt(pd.Timestamp("1900-01-01")), error="Data de Nascimento deve ser posterior a 01/01/1900"),
+        pa.Check(lambda s: s.lt(pd.Timestamp.now()), error="Data de Nascimento deve ser anterior a data atual"),
         ],
         nullable=False
     ),
@@ -268,23 +267,15 @@ metricas_funcionarios = pa.DataFrameSchema({
         pa.String,
         checks=[
             pa.Check(lambda s: s.str.strip().str.len().between(1, 20), error="Situação deve ter até 20 caracteres"),
-            pa.Check.str_matches(r"^(ativo|inativo|afastado)$", error="Situação deve ser Ativo, Inativo ou Afastado"),
+            pa.Check.str_matches(r"^(ATIVO|INATIVO|AFASTADO|FERIAS)$", error="Situação deve ser ATIVO, INATIVO, AFASTADO ou FERIAS"),
         ],
         nullable=False
     ),
     "dt_admissao": pa.Column(
-        pa.Date,
+        pa.DateTime,
         checks=[
-            pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="Data de Admissão deve ter 10 caracteres"),
-            pa.Check(lambda s: s > pd.Timestamp("1900-01-01"), error="Data de Admissão deve ser posterior a 01/01/1900"),
-            pa.Check(lambda s: s < pd.Timestamp.now(), error="Data de Admissão deve ser anterior a data atual"),
-        ],
-        nullable=False
-    ),
-    "matricula_esocial": pa.Column(
-        pa.String,
-        checks=[
-            pa.Check(lambda s: s.str.strip().str.len().between(1, 30), error="Matrícula eSocial deve ter até 30 caracteres"),
+        pa.Check(lambda s: s.gt(pd.Timestamp("1900-01-01")), error="Data de Admissão deve ser posterior a 01/01/1900"),
+        pa.Check(lambda s: s.lt(pd.Timestamp.now()), error="Data de Admissão deve ser anterior a data atual"),
         ],
         nullable=False
     ),
@@ -295,7 +286,14 @@ metricas_funcionarios = pa.DataFrameSchema({
         ],
         nullable=False
     ),
-    "codigo_categoria_esocial": pa.Column(
+    "matricula_esocial": pa.Column(
+        pa.String,
+        checks=[
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 30), error="Matrícula eSocial deve ter até 30 caracteres"),
+        ],
+        nullable=False
+    ),
+    "codigo_categoria_e_social_": pa.Column(
         pa.String,
         checks=[
             pa.Check(lambda s: s.str.strip().str.len().between(1, 8), error="Código da Categoria eSocial deve ter até 8 caracteres"),
@@ -305,16 +303,15 @@ metricas_funcionarios = pa.DataFrameSchema({
     "trabalho_em_altura": pa.Column(
         pa.String,
         checks=[
-            pa.Check(lambda s: s.str_matches(r"^(sim|nao)$"), error="Trabalho em Altura deve ser sim ou não"),
+            pa.Check.str_matches(r"^(SIM|NAO)$", error="Trabalho em Altura deve ser SIM ou NAO"),
         ],
         nullable=True
     ),
     "dt_demissao": pa.Column(
-        pa.Date,
+        pa.DateTime,
         checks=[
-            pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="Data de Demissão deve ter 10 caracteres"),
-            pa.Check(lambda s: s > pd.Timestamp("1900-01-01"), error="Data de Demissão deve ser posterior a 01/01/1900"),
-            pa.Check(lambda s: s < pd.Timestamp.now(), error="Data de Demissão deve ser anterior a data atual"),
+        pa.Check(lambda s: s.gt(pd.Timestamp("1900-01-01")), error="Data de Demissão deve ser posterior a 01/01/1900"),
+        pa.Check(lambda s: s.lt(pd.Timestamp.now()), error="Data de Demissão deve ser anterior a data atual"),
         ],
         nullable=True
     ),
@@ -416,7 +413,7 @@ metricas_funcionarios = pa.DataFrameSchema({
             pa.Check(lambda s: s.str.strip().str.len().between(1, 15), error="Celular deve ter até 15 caracteres"),
             pa.Check.str_matches(r"^\(\d{2}\) \d{5}-\d{4}$", error="Celular deve estar no formato (XX) XXXXX-XXXX"),
         ],
-        nullable=False
+        nullable=True
     )
 },
     strict=True,
