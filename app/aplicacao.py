@@ -5,7 +5,7 @@ import io
 import janitor as jn
 
 from core.schemas import metricas_setores, metricas_cargos, metricas_empresas, metricas_funcionarios
-from core.util import tratar_caracteres
+from core.util import tratar_caracteres, validar_sexo
 from janitor import clean_names
 
 
@@ -37,11 +37,12 @@ if uploaded_file:
         schema = schemas[aba]
 
         # Validação amostral
-        sample_df = df.sample(n=min(5, len(df)), random_state=42)
+        sample_df = df.sample(n=min(500, len(df)), random_state=42)
         try:
+            validar_sexo(sample_df)
             schema.validate(sample_df, lazy=True)
         except pa.errors.SchemaErrors as e:
-            st.error("Erros de validação encontrados na amostra:")
+            st.error("Warning, validação encontrados na amostra:")
             for error in e.failure_cases.itertuples():
                 st.write(f"- Linha: {error.index}, Coluna: {error.column}, Erro: {error.failure_case}, {error.check}")
             continue

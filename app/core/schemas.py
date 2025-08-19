@@ -3,11 +3,12 @@ import pandera as pa
 
 metricas_setores = pa.DataFrameSchema({
     "cod_setor": pa.Column(
-        pa.Int,
+        pa.String,
         checks=[
-            #pa.Check(lambda s: s.notnull(), error="Cod Setor não pode ser nulo"),
-            pa.Check(lambda s: s.astype(str).str.strip().str.len().between(1, 10), error="Cod Setor não pode ser vazio e deve ter até 10 caracteres"),
-            pa.Check(lambda s: s > 0, error="Cod Setor deve ser maior que zero"),
+            #pa.Check(lambda s: s.notnull(), error="Cod Setor não pode ser nulo"), 
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 15), error="Cod Setor não pode ser vazio e deve ter até 15 caracteres"),
+            pa.Check(lambda s: s.str.match(r'^[\d\.]+$'), error="Cod Setor deve conter apenas dígitos e pontos"),
+            pa.Check(lambda s: s.str.replace('.', '', regex=False).astype(int) > 0, error="Cod Setor deve ser maior que zero"),
         ],
         nullable=False
     ),
@@ -63,9 +64,9 @@ metricas_cargos = pa.DataFrameSchema({
         pa.String,
         checks=[
             #pa.Check(lambda s: s.notnull(), error="Descrição detalhada do cargo não pode ser nula"),
-            pa.Check(lambda s: s.str.strip().str.len().between(1, 1000), error="Descrição detalhada do cargo não pode ser vazia e deve ter até 1000 caracteres"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 1000), error="Descrição detalhada do cargo deve ter entre 1 e 1000 caracteres"),
         ],
-        nullable=False
+        nullable=True
     )
 },
     strict=True,
@@ -94,7 +95,7 @@ metricas_empresas = pa.DataFrameSchema({
         checks=[
             pa.Check(lambda s: s.notnull(), error="CNAE 7 não pode ser nulo"),
             pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="CNAE 7 deve ter ate 10 caracteres"),
-            pa.Check.str_matches((r'^\d{2}\.\d{2}-\d(?:/\d{2})?$'), error="CNAE 7 deve estar no formato XX.XX-X ou XX.XX-X/XX"),
+            pa.Check.str_matches((r'^\d{7}$'), error="CNAE 7 deve estar no formato XXXXXXX"),
         ],
         nullable=False
     ),
@@ -120,7 +121,8 @@ metricas_empresas = pa.DataFrameSchema({
         checks=[
             #pa.Check(lambda s: s.notnull(), error="Inscrição Unidade não pode ser nula"),
             pa.Check(lambda s: s.str.strip().str.len().between(1, 200), error="Inscrição Unidade deve ter entre 1 e 200 caracteres"),
-            pa.Check.str_matches(r"^(\d{3}\.\d{3}\.\d{3}\.\d{3}|\d{8})$", error="Inscrição Unidade deve estar no formato IE: XXX.XXX.XXX.XXX ou IM: XXXXXXXX"),
+            pa.Check.str_matches(r"^(\d{3}\.\d{3}\.\d{3}\.\d{3}|\d{8})$", error="Inscrição Unidade deve estar no formato IE de cada Estado"),
+            pa.Check.str_matches(r"^(\d{2}\.\d{3}\.\d{3}\/\d{3}\-\d{2}|\d{13})$", error="Inscrição Unidade deve estar no formato IE de cada Estado"),
         ],
         nullable=False
     ),
@@ -259,7 +261,8 @@ metricas_funcionarios = pa.DataFrameSchema({
         pa.String,
         checks=[
             pa.Check(lambda s: s.str.strip().str.len().between(1, 1), error="Sexo deve ter exatamente 1 caractere"),
-            pa.Check.str_matches(r"^(M|F|m|f)$", error="Sexo deve ser M, F"),
+            #pa.Check.str_matches(r"^(M|F|m|f)$", error="Sexo deve ser M, F"),
+            pa.Check(lambda s: s.fillna('').astype(str).str.strip().str.lower().map(lambda v: {'feminino':'f','f':'f','masculino':'m','m':'m'}.get(v, '')).isin(['f','m']), error="Sexo deve ser Feminino/Masculino ou F/M")
         ],
         nullable=False
     ),
@@ -293,7 +296,7 @@ metricas_funcionarios = pa.DataFrameSchema({
         ],
         nullable=False
     ),
-    "codigo_categoria_e_social_": pa.Column(
+    "codigo_categoria_esocial": pa.Column(
         pa.String,
         checks=[
             pa.Check(lambda s: s.str.strip().str.len().between(1, 8), error="Código da Categoria eSocial deve ter até 8 caracteres"),

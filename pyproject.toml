@@ -21,4 +21,4 @@ dependencies = [
 ]
 
 [tool.taskipy.tasks]
-venv = ".\\.venv\\Scripts\\activate"
+init = "streamlit run app\aplicacao.py"
