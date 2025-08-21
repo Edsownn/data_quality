@@ -7,13 +7,30 @@ def tratar_caracteres(texto):
             texto = unidecode(texto)
         return texto
 
-def validar_sexo(df):
-    if 'sexo' in df.columns:
-        mapping = {'feminino':'F','f':'F','masculino':'M','m':'M'}
-        df['sexo'] = (df['sexo']
-                      .fillna('')
-                      .astype(str)
-                      .str.strip()
-                      .str.lower()
-                      .map(mapping)
-                      .where(lambda s: s.isin(['F','M'])))
+def validar_sexo(df, coluna='sexo'):
+    if coluna not in df.columns:
+        return df
+    ser = df[coluna].astype(str).str.strip()
+    ser_norm = (ser
+                .str.lower()
+                .map({'f': 'F',
+                      'feminino': 'F',
+                      'm': 'M',
+                      'masculino': 'M'}))
+    df[coluna] = ser_norm.where(ser_norm.isin(['F','M']))
+    return df
+         
+
+def tratar_cep(valor):
+    if valor is None:
+        return valor
+    
+    digits = re.sub(r'\D', '', str(valor))
+    if len(digits) != 8:
+        return valor
+    return f"{digits[:5]}-{digits[5:]}"
+
+def normalizar_coluna_cep(df, coluna='cep'):
+    if coluna in df.columns:
+        df[coluna] = df[coluna].apply(tratar_cep)
+    return df

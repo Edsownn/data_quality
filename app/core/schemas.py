@@ -121,9 +121,7 @@ metricas_empresas = pa.DataFrameSchema({
         checks=[
             #pa.Check(lambda s: s.notnull(), error="Inscrição Unidade não pode ser nula"),
             pa.Check(lambda s: s.str.strip().str.len().between(1, 200), error="Inscrição Unidade deve ter entre 1 e 200 caracteres"),
-            pa.Check.str_matches(r"^(\d{3}\.\d{3}\.\d{3}\.\d{3}|\d{8})$", error="Inscrição Unidade deve estar no formato IE de cada Estado"),
-            pa.Check.str_matches(r"^(\d{2}\.\d{3}\.\d{3}\/\d{3}\-\d{2}|\d{13})$", error="Inscrição Unidade deve estar no formato IE de cada Estado"),
-        ],
+            pa.Check.str_matches(r"^(\d{3}\.\d{3}\.\d{3}\.\d{3}|\d{8})$", error="Inscrição Unidade deve estar no formato IE de cada Estado")        ],
         nullable=False
     ),
     "cnpj_da_matriz": pa.Column(
@@ -184,7 +182,7 @@ metricas_empresas = pa.DataFrameSchema({
         pa.String,
         checks=[
             pa.Check(lambda s: s.str.strip().str.len().between(1,25), error="Telefone deve ter entre 1 e 25 caracteres"),
-            pa.Check.str_matches(r"^\(\d{2}\) \d{4,5}-\d{4}$", error="Telefone deve estar no formato (XX) XXXXX-XXXX"),
+            pa.Check.str_matches(r"^(?:\(\d{2}\) \d{4,5}-\d{4}|\(\d{2}\) \d{8})$", error="Telefone deve estar no formato (XX) XXXXX-XXXX ou (XX)XXXXXXXX"),
         ],
         nullable=True
     )
@@ -203,18 +201,20 @@ metricas_funcionarios = pa.DataFrameSchema({
         nullable=False
     ),
     "cod_setor":pa.Column(
-        pa.Int,
+        pa.String,
         checks=[
-            pa.Check(lambda s: s.astype(str).str.strip().str.len().between(1, 10), error="Cod Setor não pode ser vazio e deve ter até 10 caracteres"),
-            pa.Check(lambda s: s > 0, error="Cod Setor deve ser maior que zero"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 15), error="Cod Setor não pode ser vazio e deve ter até 15 caracteres"),
+            pa.Check(lambda s: s.str.match(r'^[\d\.]+$'), error="Cod Setor deve conter apenas dígitos e pontos"),
+            pa.Check(lambda s: s.str.replace('.', '', regex=False).astype(int) > 0, error="Cod Setor deve ser maior que zero"),
         ],
         nullable=False
     ),
     "cod_cargo":pa.Column(
-        pa.Int,
+        pa.String,
         checks=[
-            pa.Check(lambda s: s.astype(str).str.strip().str.len().between(1, 10), error="Cod Cargo não pode ser vazio e deve ter até 10 caracteres"),
-            pa.Check(lambda s: s > 0, error="Cod Cargo deve ser maior que zero"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="Cod Setor não pode ser vazio e deve ter até 10 caracteres"),
+            pa.Check(lambda s: s.str.match(r'^[\d\.]+$'), error="Cod Setor deve conter apenas dígitos e pontos"),
+            pa.Check(lambda s: s.str.replace('.', '', regex=False).astype(int) > 0, error="Cod Setor deve ser maior que zero"),
         ],
         nullable=False
     ),
@@ -328,7 +328,7 @@ metricas_funcionarios = pa.DataFrameSchema({
     "rg": pa.Column(
         pa.String,
         checks=[
-            pa.Check(lambda s: s.str.strip().str.len().between(1, 12), error="RG deve ter até 12 caracteres"),
+            pa.Check(lambda s: s.str.replace(r"\D+", "", regex=True).str.len().between(1, 12), error="RG deve ter até 12 caracteres"),
         ],
         nullable=True
     ),
@@ -370,7 +370,7 @@ metricas_funcionarios = pa.DataFrameSchema({
     "endereco": pa.Column(
         pa.String,
         checks=[
-            pa.Check(lambda s: s.str.strip().str.len().between(1, 60), error="Endereço deve ter até 60 caracteres"),
+            pa.Check(lambda s: s.str.strip().str.len().between(2, 60), error="Endereço deve ter entre 2 e 60 caracteres"),
         ],
         nullable=True
     ),
@@ -406,7 +406,7 @@ metricas_funcionarios = pa.DataFrameSchema({
         pa.String,
         checks=[
             pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="CEP deve ter até 10 caracteres"),
-            pa.Check.str_matches(r"^\d{2}\.\d{3}-\d{3}$", error="CEP deve estar no formato XX.XXX-XXX"),
+            pa.Check.str_matches(r"^\d{2}\.\d{3}-\d{3}|\d{5}-\d{3}$", error="CEP deve estar no formato XXXXX-XXX"),
         ],
         nullable=False
     ),
@@ -414,7 +414,7 @@ metricas_funcionarios = pa.DataFrameSchema({
         pa.String,
         checks=[
             pa.Check(lambda s: s.str.strip().str.len().between(1, 15), error="Celular deve ter até 15 caracteres"),
-            pa.Check.str_matches(r"^\(\d{2}\) \d{5}-\d{4}$", error="Celular deve estar no formato (XX) XXXXX-XXXX"),
+            pa.Check.str_matches(r"^\(\d{2}\) \d{5}-\d{4}|\(\d{2}\) \d{9}|\(\d{2}\) \d{8}$", error="Celular deve estar no formato (XX) XXXXX-XXXX ou (XX)XXXXXXXX"),
         ],
         nullable=True
     )
