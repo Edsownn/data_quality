@@ -142,12 +142,12 @@ metricas_empresas = pa.DataFrameSchema({
         nullable=False
     ),
     "numero": pa.Column(
-        pa.Int,
+        pa.String,
         checks=[
-            pa.Check(lambda s: s.astype(str).str.strip().str.len().between(1, 10), error="numero não pode ser vazio e deve ter até 10 caracteres"),
-            pa.Check(lambda s: s > 0, error="numero deve ser maior que zero"),
-        ],
-        nullable=False
+            pa.Check(lambda s: s.eq("S/N") | (s.astype(str).str.strip().str.len().between(1, 10)),error="numero deve ter até 10 caracteres ou 'S/N'"),
+            pa.Check(lambda s: s.eq("S/N") | s.astype(str).astype(float) > 0,error="numero deve ser maior que zero ou 'S/N'"),
+    ],
+    nullable=False
     ),
     "bairro": pa.Column(
         pa.String,

@@ -24,7 +24,7 @@ if uploaded_file:
     abas = list(schemas.keys())  
     df_dict = pd.read_excel(uploaded_file, sheet_name=abas)
     normalized_dfs = {}
-    todas_abas_validas = True  # Flag para controlar se todas as abas são válidas
+    todas_abas_validas = True  # Variável para controlar se todas as abas são válidas
 
     for aba, df in df_dict.items():
         st.subheader(f"Aba: {aba}")
@@ -34,7 +34,6 @@ if uploaded_file:
 
         if df is None or len(df) == 0:
             st.warning("Aba vazia, pulando validação.")
-            todas_abas_validas = False  # Aba vazia é considerada inválida
             continue
 
         # Normaliza sexo e CEP no DataFrame completo
@@ -52,7 +51,7 @@ if uploaded_file:
         schema = schemas[aba]
 
         # Valida amostra
-        aba_valida = True  # Flag para esta aba específica
+        aba_valida = True  # Controla se a aba atual é válida
         try:
             schema.validate(sample_df, lazy=True)
         except pa.errors.SchemaErrors as e:
@@ -61,6 +60,7 @@ if uploaded_file:
             erro_critico = False
             for error in e.failure_cases.itertuples():
                 linha_excel = (error.index + 2) if error.index is not None else "N/A"
+                # Verifica se o erro é em um campo opcional
                 if error.column in ["cod_empresa","telefone", "cod_cbo","nome_social",
                                     "trabalho_em_altura", "dt_admissao", "pis_pasep", "rg",
                                     "uf_do_rg", "emissor_rg", "ctps", "serie_ctps", "uf_ctps",
@@ -91,10 +91,11 @@ if uploaded_file:
             erro_critico = False
             for error in e.failure_cases.itertuples():
                 linha_excel = (error.index + 2) if error.index is not None else "N/A"
+                # Verifica se o erro é em um campo opcional
                 if error.column in ["cod_empresa","telefone", "cod_cbo","nome_social",
                                     "trabalho_em_altura", "dt_admissao", "pis_pasep", "rg",
                                     "uf_do_rg", "emissor_rg", "ctps", "serie_ctps", "uf_ctps",
-                                    "endereco", "numero", "bairro", "cidade", "uf", "celular", "cep"]:
+                                    "endereco", "numero", "bairro", "cidade", "uf", "celular"]:
                     aviso_opcional.append(
                         f"- Linha: {linha_excel}, Coluna: {error.column}, Erro: {error.failure_case}, {error.check}"
                     )
@@ -108,6 +109,9 @@ if uploaded_file:
             if erro_critico:
                 aba_valida = False
                 todas_abas_validas = False
+            else:
+                # Se não há erros críticos, apenas opcionais, considera válida
+                st.success("Planilha válida! (apenas campos opcionais com problemas)")
         except Exception as e:
             st.error(f"Erro inesperado: {e}")
             aba_valida = False
@@ -115,7 +119,7 @@ if uploaded_file:
 
     # Só mostra o botão de download se todas as abas forem válidas
     if normalized_dfs and todas_abas_validas:
-        st.success("🎉 Todas as abas foram validadas com sucesso!")
+        st.success("Todas as abas foram validadas com sucesso! Você pode baixar a planilha normalizada.")
         buffer = io.BytesIO()
         with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
             for aba, ndf in normalized_dfs.items():
@@ -123,10 +127,12 @@ if uploaded_file:
                 ndf.to_excel(writer, sheet_name=sheet_name, index=False)
         buffer.seek(0)
         st.download_button(
-            label="📥 Baixar planilha normalizada",
+            label="Baixar planilha normalizada",
             data=buffer,
             file_name="planilha_normalizada.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
     elif normalized_dfs and not todas_abas_validas:
-        st.error("❌ Existem erros críticos em uma ou mais abas. Corrija os problemas antes de baixar a planilha.")
+        st.warning("Existem erros em uma ou mais abas. Corrija os erros antes de baixar a planilha normalizada.")
+    elif not normalized_dfs:
+        st.info("Faça upload de uma planilha para começar a validação.")
