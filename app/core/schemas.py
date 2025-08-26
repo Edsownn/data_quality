@@ -5,7 +5,6 @@ metricas_setores = pa.DataFrameSchema({
     "cod_setor": pa.Column(
         pa.String,
         checks=[
-            #pa.Check(lambda s: s.notnull(), error="Cod Setor não pode ser nulo"), 
             pa.Check(lambda s: s.str.strip().str.len().between(1, 15), error="Cod Setor não pode ser vazio e deve ter até 15 caracteres"),
             pa.Check(lambda s: s.str.match(r'^[\d\.]+$'), error="Cod Setor deve conter apenas dígitos e pontos"),
             pa.Check(lambda s: s.str.replace('.', '', regex=False).astype(int) > 0, error="Cod Setor deve ser maior que zero"),
@@ -121,7 +120,7 @@ metricas_empresas = pa.DataFrameSchema({
         checks=[
             #pa.Check(lambda s: s.notnull(), error="Inscrição Unidade não pode ser nula"),
             pa.Check(lambda s: s.str.strip().str.len().between(1, 200), error="Inscrição Unidade deve ter entre 1 e 200 caracteres"),
-            pa.Check.str_matches(r"^(\d{3}\.\d{3}\.\d{3}\.\d{3}|\d{8})$", error="Inscrição Unidade deve estar no formato IE de cada Estado")        ],
+        ],
         nullable=False
     ),
     "cnpj_da_matriz": pa.Column(
