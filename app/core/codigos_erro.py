@@ -20,11 +20,23 @@ CODIGOS_ERRO = {
     "502": "Campo opcional com tamanho fora do limite permitido",
     "503": "Campo opcional incompleto",
     "504": "Endereço incompleto ou inconsistente",
-    "505": "Contato incompleto (telefone/celular)"
+    "505": "Contato incompleto (telefone/celular)",
+
+    # Grupo 6 - Campos únicos e integridade referencial
+    "601": "Valor duplicado em campo que deve ser único",
+    "602": "Código não encontrado na tabela de referência",
 }
 
 def mapear_codigo_erro(mensagem_erro: str, coluna: str, nullable: bool = False) -> str:
     mensagem_lower = mensagem_erro.lower()
+    
+    # Verificações de integridade referencial e uniqueness PRIMEIRO
+    if any(termo in mensagem_lower for termo in ["não existe na tabela", "referência", "integridade_referencial"]):
+        return "602"
+    
+    if any(termo in mensagem_lower for termo in ["duplicado", "unique", "duplicates", "único"]):
+        return "601"
+    
     
     # Campos obrigatórios (nullable=False)
     if not nullable:
@@ -69,6 +81,7 @@ def mapear_codigo_erro(mensagem_erro: str, coluna: str, nullable: bool = False) 
     # Padrão para casos não mapeados
     return "201"
 
+
 def obter_descricao_codigo(codigo: str) -> str:
     return CODIGOS_ERRO.get(codigo, "Erro não catalogado")
 
@@ -82,3 +95,18 @@ COLUNAS_OPCIONAIS = {
 
 def eh_campo_opcional(coluna: str) -> bool:
     return coluna in COLUNAS_OPCIONAIS
+
+def mapear_codigo_erro_pandera(mensagem_erro: str, coluna: str) -> str:
+    mensagem_lower = mensagem_erro.lower()
+    
+    # Detecção de violação unique (duplicatas)
+    if any(termo in mensagem_lower for termo in ["duplicates", "unique", "duplicated values"]):
+        return "601"
+    
+    # Outros erros específicos do pandera
+    if "check" in mensagem_lower and "unique" in mensagem_lower:
+        return "601"
+    
+    # Fallback para função padrão
+    nullable = eh_campo_opcional(coluna)
+    return mapear_codigo_erro(mensagem_erro, coluna, nullable)

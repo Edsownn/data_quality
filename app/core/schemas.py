@@ -9,12 +9,12 @@ metricas_setores = pa.DataFrameSchema({
             pa.Check(lambda s: s.str.match(r'^[\d\.]+$'), error="Cod Setor deve conter apenas dígitos e pontos"),
             pa.Check(lambda s: s.str.replace('.', '', regex=False).astype(int) > 0, error="Cod Setor deve ser maior que zero"),
         ],
-        nullable=False
+        nullable=False,
+        unique=True
     ),
     "nome_setor": pa.Column(
         pa.String,
         checks=[
-            #pa.Check(lambda s: s.notnull(), error="Nome setor não pode ser nulo"),
             pa.Check(lambda s: s.apply(lambda x: isinstance(x, str)), error="Nome setor deve ser texto"),
             pa.Check(lambda s: s.str.strip().str.len().between(1, 200), error="Nome setor não pode ser vazio e deve ter até 200 caracteres"),
         ],
@@ -23,7 +23,6 @@ metricas_setores = pa.DataFrameSchema({
     "cnpj_da_empresa": pa.Column(
         pa.String,
         checks=[
-            #pa.Check(lambda s: s.notnull(), error="CNPJ da empresa não pode ser nulo"),
             pa.Check(lambda s: s.apply(lambda x: isinstance(x, str)), error="CNPJ deve ser texto"),
             pa.Check(lambda s: s.str.len() == 18, error="CNPJ deve ter 18 caracteres"),
             pa.Check.str_matches(r"^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$", error="CNPJ deve estar no formato XX.XXX.XXX/XXXX-XX"),
@@ -42,7 +41,8 @@ metricas_cargos = pa.DataFrameSchema({
             #pa.Check(lambda s: s.notnull(), error="Cod Cargo não pode ser nulo"),
             pa.Check(lambda s: s > 0, error="Cod Cargo deve ser maior que zero"),
         ],
-        nullable=False
+        nullable=False,
+        unique=True
     ),
     "cod_cbo": pa.Column(
         pa.String,
@@ -110,7 +110,6 @@ metricas_empresas = pa.DataFrameSchema({
     "razao_social": pa.Column(
         pa.String,
         checks=[
-            #pa.Check(lambda s: s.notnull(), error="Razão Social não pode ser nula"),
             pa.Check(lambda s: s.str.strip().str.len().between(1, 200), error="Razão Social não pode ser vazia e deve ter até 60 caracteres"),
         ],
         nullable=False
@@ -118,7 +117,6 @@ metricas_empresas = pa.DataFrameSchema({
     "inscricao": pa.Column(
         pa.String,
         checks=[
-            #pa.Check(lambda s: s.notnull(), error="Inscrição Unidade não pode ser nula"),
             pa.Check(lambda s: s.str.strip().str.len().between(1, 200), error="Inscrição Unidade deve ter entre 1 e 200 caracteres"),
         ],
         nullable=False
@@ -126,7 +124,6 @@ metricas_empresas = pa.DataFrameSchema({
     "cnpj_da_matriz": pa.Column(
         pa.String,
         checks=[
-            #pa.Check(lambda s: s.notnull(), error="CNPJ da Matriz não pode ser nulo"),
             pa.Check(lambda s: s.str.len() == 18, error="CNPJ da Matriz deve ter 18 caracteres"),
             pa.Check.str_matches(r"^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$", error="CNPJ da Matriz deve estar no formato XX.XXX.XXX/XXXX-XX"),
         ],
@@ -135,7 +132,6 @@ metricas_empresas = pa.DataFrameSchema({
     "endereco": pa.Column(
         pa.String,
         checks=[
-            #pa.Check(lambda s: s.notnull(), error="Endereço não pode ser nulo"),
             pa.Check(lambda s: s.str.strip().str.len().between(1, 110), error="Endereço não pode ser vazio e deve ter até 110 caracteres"),
         ],
         nullable=False
@@ -231,6 +227,7 @@ metricas_funcionarios = pa.DataFrameSchema({
             #pa.Check(lambda s: s.notnull(), error="CPF não pode ser nulo"),
             pa.Check(lambda s: s.str.len() == 14, error="CPF deve ter 14 caracteres"),
             pa.Check.str_matches(r"^\d{3}\.\d{3}\.\d{3}-\d{2}$", error="CPF deve estar no formato XXX.XXX.XXX-XX"),
+            pa.Check.unique(error="CPF deve ser único"),
         ],
         nullable=False
     ),
@@ -327,7 +324,7 @@ metricas_funcionarios = pa.DataFrameSchema({
     "rg": pa.Column(
         pa.String,
         checks=[
-            pa.Check(lambda s: s.str.replace(r"\D+", "", regex=True).str.len().between(1, 12), error="RG deve ter até 12 caracteres"),
+            pa.Check(lambda s: s.str.replace(r"\D+", "", regex=True).str.len().between(1, 15), error="RG deve ter até 15 caracteres"),
         ],
         nullable=True
     ),
