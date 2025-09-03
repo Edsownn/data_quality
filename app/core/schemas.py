@@ -219,17 +219,17 @@ metricas_funcionarios = pa.DataFrameSchema({
             pa.Check(lambda s: s.astype(str).str.strip().str.len().between(1, 10), error="Cod Funcionario não pode ser vazio e deve ter até 10 caracteres"),
             pa.Check(lambda s: s > 0, error="Cod Funcionario deve ser maior que zero"),
         ],
-        nullable=False
+        nullable=False,
+        unique=True
     ),
     "cpf":pa.Column(
         pa.String,
         checks=[
-            #pa.Check(lambda s: s.notnull(), error="CPF não pode ser nulo"),
             pa.Check(lambda s: s.str.len() == 14, error="CPF deve ter 14 caracteres"),
             pa.Check.str_matches(r"^\d{3}\.\d{3}\.\d{3}-\d{2}$", error="CPF deve estar no formato XXX.XXX.XXX-XX"),
-            pa.Check.unique(error="CPF deve ser único"),
         ],
-        nullable=False
+        nullable=False,
+        unique=True
     ),
     "nome_funcionario":pa.Column(
         pa.String,

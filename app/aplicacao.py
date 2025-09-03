@@ -84,7 +84,7 @@ if uploaded_file:
             
             if erros_reais:
                 total_registros_com_erro = sum(erro.get("quantidade_registros", 0) for erro in erros_reais)
-                st.error(f"❌ ERRO: {total_registros_com_erro} funcionários com códigos de setor inválidos!")
+                st.error(f" ERRO: {total_registros_com_erro} funcionários com códigos de setor inválidos!")
                 
                 # Adiciona cada erro ao relatório - um para cada linha afetada
                 for erro in erros_reais:
@@ -162,7 +162,6 @@ if uploaded_file:
                             "INTEGRIDADE_REFERENCIAL"
                         )
                 
-                # Mostra detalhes dos erros
                 with st.expander("Ver detalhes dos erros de setor em cargos"):
                     for erro in erros_reais:
                         codigo = erro.get("codigo_invalido", "N/A")
@@ -178,33 +177,28 @@ if uploaded_file:
                 else:
                     st.success("Integridade referencial Cargos → Setores OK")
         
-        # Verifica integridade Modelo F → Cargos (cod_cargo)
         if aba == "Modelo F" and "Cargos" in df_dict and 'cod_cargo' in df.columns:
             erros_integridade = verificar_integridade(df, df_dict["Cargos"], "cod_cargo", "cod_cargo")
             
-            # Filtra apenas erros que realmente afetam registros
             erros_reais = [erro for erro in erros_integridade if erro.get("quantidade_registros", 0) > 0]
             
             if erros_reais:
                 total_registros_com_erro = sum(erro.get("quantidade_registros", 0) for erro in erros_reais)
                 st.error(f"ERRO: {total_registros_com_erro} funcionários com códigos de cargo inválidos!")
                 
-                # Adiciona cada erro ao relatório - um para cada linha afetada
                 for erro in erros_reais:
                     linhas_afetadas = erro.get("linhas_afetadas", [])
                     if linhas_afetadas:
-                        # Adiciona um erro para cada linha específica
                         for linha in linhas_afetadas:
                             adicionar_erro_relatorio(
                                 lista,
                                 erro.get("erro", "Erro de integridade referencial"),
                                 aba,
-                                linha,  # Linha específica
+                                linha, 
                                 "cod_cargo", 
                                 "INTEGRIDADE_REFERENCIAL"
                             )
                     else:
-                        # Fallback se não houver linhas específicas
                         adicionar_erro_relatorio(
                             lista,
                             erro.get("erro", "Erro de integridade referencial"),
@@ -217,7 +211,7 @@ if uploaded_file:
                 # Mostra detalhes dos erros
                 with st.expander("Ver detalhes dos erros de cargo"):
                     for erro in erros_reais:
-                        codigo = erro.get("codigo_invalido", "N/A")  # Agora é genérico
+                        codigo = erro.get("codigo_invalido", "N/A")
                         qtd = erro.get("quantidade_registros", 0)
                         st.write(f"- Código `{codigo}`: {qtd} registros")
                 
@@ -226,9 +220,9 @@ if uploaded_file:
                 # Verifica se houve erro de coluna não encontrada
                 erros_sistema = [erro for erro in erros_integridade if "não encontrada" in erro.get("erro", "")]
                 if erros_sistema:
-                    st.warning(f"⚠️ {erros_sistema[0]['erro']}")
+                    st.warning(f"{erros_sistema[0]['erro']}")
                 else:
-                    st.success("✅ Integridade referencial Modelo F → Cargos OK")
+                    st.success("Integridade referencial Modelo F → Cargos OK")
 
         if df is None or len(df) == 0:
             st.warning("Aba vazia, pulando validação.")
@@ -248,7 +242,7 @@ if uploaded_file:
 
         schema = schemas[aba]
 
-        # Valida amostra
+
         aba_valida = True  # Controla se a aba atual é válida
         try:
             schema.validate(sample_df, lazy=True)
@@ -261,7 +255,6 @@ if uploaded_file:
                 linha_excel = (error.index + 2) if error.index is not None else "N/A"
                 mensagem_erro = f"{error.failure_case}, {error.check}"
                 
-                # Verifica se o erro é em um campo opcional
                 if error.column in ["cod_empresa","telefone", "cod_cbo","nome_social",
                                     "trabalho_em_altura", "dt_admissao", "pis_pasep", "rg",
                                     "uf_do_rg", "emissor_rg", "ctps", "serie_ctps", "uf_ctps",
@@ -311,12 +304,10 @@ if uploaded_file:
                 linha_excel = (error.index + 2) if error.index is not None else "N/A"
                 mensagem_erro = f"{error.failure_case}, {error.check}"
                 
-                # Verifica se o erro é em um campo opcional
                 if error.column in ["cod_empresa","telefone", "cod_cbo","nome_social",
                                     "trabalho_em_altura", "dt_admissao", "pis_pasep", "rg",
                                     "uf_do_rg", "emissor_rg", "ctps", "serie_ctps", "uf_ctps",
-                                    "endereco", "numero", "bairro", "cidade", "uf", "celular"]:
-                    # Erro opcional - adiciona ao relatório
+                                    "endereco", "numero", "bairro", "cidade", "uf", "celular","cep"]:
                     adicionar_erro_schema(
                         lista, mensagem_erro, 
                         aba, linha_excel, error.column, "OPCIONAL"
@@ -357,7 +348,6 @@ if uploaded_file:
     if lista:
         df_relatorio = pd.DataFrame(lista)
         
-        # Download do relatório em Excel
         buffer_relatorio = io.BytesIO()
         df_relatorio.to_excel(buffer_relatorio, index=False, sheet_name="Relatório_Erros")
         buffer_relatorio.seek(0)
@@ -369,7 +359,7 @@ if uploaded_file:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-    # Só mostra o botão de download se todas as abas forem válidas
+
     if normalized_dfs:
         buffer = io.BytesIO()
         with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
