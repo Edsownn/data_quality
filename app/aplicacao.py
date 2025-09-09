@@ -6,7 +6,7 @@ import io
 
 
 from core.schemas import metricas_setores, metricas_cargos, metricas_empresas, metricas_funcionarios
-from core.util import tratar_caracteres, validar_sexo, normalizar_coluna_cep, verificar_integridade
+from core.util import tratar_caracteres, validar_sexo, normalizar_coluna_cep, verificar_integridade, settings
 from core.codigos_erro import mapear_codigo_erro, mapear_codigo_erro_pandera, obter_descricao_codigo, eh_campo_opcional
 from janitor import clean_names
 
@@ -375,3 +375,5 @@ if uploaded_file:
         )
     elif not normalized_dfs:
         st.info("Faça upload de uma planilha para começar a validação.")
+
+# settings["DATABASE_DEV_PASSWORD"]

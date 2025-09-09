@@ -1,6 +1,46 @@
 from unidecode import unidecode
 import re
 
+import os
+import sys
+from datetime import datetime, timedelta
+
+from dynaconf import LazySettings
+from loguru import logger
+
+settings = LazySettings(
+    envvar_prefix="YAVIX",
+    settings_files=["settings.toml", ".secrets.toml"],
+    sysenv_fallback=True,
+    force_envvars=True,
+)
+
+
+if not os.path.exists(settings["app_log_dir"]):
+    os.makedirs(settings["app_log_dir"], exist_ok=True)
+
+# Configure the logger
+logger.remove()  # Remove the default handler
+logger.add(
+    sys.stdout,
+    format="{time} - {level} - {file} - {name}:{line} - {message}",
+    level="DEBUG",
+    backtrace=True,
+    diagnose=True,
+)
+logger.add(
+    settings["app_log_dir"] + "/jobs.log",
+    rotation="100 MB",
+    colorize=True,
+    format="{time} - {level} - {module} {name}:{line} - {message}",
+    level="DEBUG",
+    backtrace=True,
+    diagnose=True,
+)
+
+# Export the configured logger
+logger = logger.bind()
+
 def tratar_caracteres(texto):
         if isinstance(texto, str):
             texto = texto.replace('Ç', 'C').replace('ç', 'c')
