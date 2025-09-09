@@ -112,6 +112,7 @@ ipython_config.py
 #   in version control.
 #   https://pdm.fming.dev/#use-with-ide
 .pdm.toml
+.secrets.toml
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
@@ -173,4 +174,7 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
+
+
 # End of https://www.toptal.com/developers/gitignore/api/python
+
