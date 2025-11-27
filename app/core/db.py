@@ -57,28 +57,36 @@ class Operator:
             Union[sqlite3.Connection, psycopg.Connection]: Connection object to the database.
         """
         _database = self.database
+        # SQLite path fallback
         if self.db_type == DatabaseType.SQLITE:
             if not _database or _database == "default":
-                _database = settings.DATABASE_LOCAL_SQLITE
+                # prefer explicit setting, otherwise use app data dir
+                sqlite_path = settings.get("DATABASE_LOCAL_SQLITE") or (settings.get("APP_DATA_DIR") + "/local.db")
+                _database = sqlite_path
             return sqlite3.connect(_database)
+
+        # PostgreSQL: use settings.get to avoid KeyError; if any required key is missing, fall back to local sqlite
         elif self.db_type == DatabaseType.POSTGRESQL:
-            _connection = {
-                "user": settings[f"DATABASE_{_database.upper()}_USER"],
-                "password": settings[f"DATABASE_{_database.upper()}_PASSWORD"],
-                "password_encoded": quote_plus(
-                    settings[f"DATABASE_{_database.upper()}_PASSWORD"]
-                ),
-                "host": settings[f"DATABASE_{_database.upper()}_HOST"],
-                "port": settings[f"DATABASE_{_database.upper()}_PORT"],
-                "db_name": settings[f"DATABASE_{_database.upper()}_DB"],
-                "schema": settings[f"DATABASE_{_database.upper()}_SCHEMA"],
-            }
+            user = settings.get(f"DATABASE_{_database.upper()}_USER")
+            password = settings.get(f"DATABASE_{_database.upper()}_PASSWORD")
+            host = settings.get(f"DATABASE_{_database.upper()}_HOST")
+            port = settings.get(f"DATABASE_{_database.upper()}_PORT")
+            db_name = settings.get(f"DATABASE_{_database.upper()}_DB")
+
+            missing = [k for k, v in (
+                ("user", user), ("password", password), ("host", host), ("port", port), ("db", db_name)
+            ) if not v]
+            if missing:
+                logger.warning(f"Postgres config incomplete for '{_database}' ({missing}); falling back to local sqlite for development.")
+                sqlite_path = settings.get("DATABASE_LOCAL_SQLITE") or (settings.get("APP_DATA_DIR") + "/local.db")
+                return sqlite3.connect(sqlite_path)
+
             return psycopg.connect(
-                dbname=_connection.get("db_name"),
-                user=_connection.get("user"),
-                password=_connection.get("password"),
-                host=_connection.get("host"),
-                port=_connection.get("port"),
+                dbname=db_name,
+                user=user,
+                password=password,
+                host=host,
+                port=port,
                 application_name="dw_import",
             )
 
@@ -258,15 +266,16 @@ class Operator:
                     _rollbacks += 1
                     continue
             else:  # PostgreSQL
-                with self.conn.transaction():
+                try:
                     with self.conn.cursor() as cur:
-                        try:
-                            cur.execute(query, params)
-                            _inserted += 1
-                        except psycopg.Error as e:
-                            logger.error(f"Error inserting record {idx+1}: {e}")
-                            _rollbacks += 1
-                            continue
+                        cur.execute(query, params)
+                        self.conn.commit()
+                        _inserted += 1
+                except psycopg.Error as e:
+                    logger.error(f"Error inserting record {idx+1}: {e}")
+                    self.conn.rollback()
+                    _rollbacks += 1
+                    continue
         logger.info(
             f"[INSERT] Inserted data into table '{self.table}'\n{json.dumps({'inserted': _inserted, 'rollbacks': _rollbacks, 'total': len(records)}, indent=2,)}"
         )
@@ -302,20 +311,21 @@ class Operator:
                     _rollbacks += 1
                     continue
             else:  # PostgreSQL
-                with self.conn.transaction():
+                try:
                     with self.conn.cursor() as cur:
-                        try:
-                            cur.execute(query, params)
-                            result = cur.fetchone()
-                            was_inserted = result
-                            if was_inserted:
-                                _inserted += 1
-                            else:
-                                _updated += 1
-                        except psycopg.Error as e:
-                            logger.error(f"Error upserting record {idx+1}: {e}")
-                            _rollbacks += 1
-                            continue
+                        cur.execute(query, params)
+                        result = cur.fetchone()
+                        was_inserted = result
+                        if was_inserted:
+                            _inserted += 1
+                        else:
+                            _updated += 1
+                        self.conn.commit()
+                except psycopg.Error as e:
+                    logger.error(f"Error upserting record {idx+1}: {e}")
+                    self.conn.rollback()
+                    _rollbacks += 1
+                    continue
         stats = {
             "inserted": _inserted,
             "updated": _updated,

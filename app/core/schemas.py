@@ -1,5 +1,6 @@
 import pandas as pd
 import pandera as pa
+import unicodedata
 
 metricas_setores = pa.DataFrameSchema({
     "cod_setor": pa.Column(
@@ -63,7 +64,7 @@ metricas_cargos = pa.DataFrameSchema({
         pa.String,
         checks=[
             #pa.Check(lambda s: s.notnull(), error="Descrição detalhada do cargo não pode ser nula"),
-            pa.Check(lambda s: s.str.strip().str.len().between(1, 1000), error="Descrição detalhada do cargo deve ter entre 1 e 1000 caracteres"),
+            pa.Check(lambda s: s.str.strip().str.len().between(1, 2000), error="Descrição detalhada do cargo deve ter entre 1 e 2000 caracteres"),
         ],
         nullable=True
     )
@@ -266,7 +267,14 @@ metricas_funcionarios = pa.DataFrameSchema({
         pa.String,
         checks=[
             pa.Check(lambda s: s.str.strip().str.len().between(1, 20), error="Situação deve ter até 20 caracteres"),
-            pa.Check.str_matches(r"^(ATIVO|INATIVO|AFASTADO|FERIAS)$", error="Situação deve ser ATIVO, INATIVO, AFASTADO ou FERIAS"),
+            pa.Check(
+                lambda s: s.fillna("").astype(str)
+                .str.strip()
+                .str.upper()
+                .map(lambda v: unicodedata.normalize("NFKD", v).encode("ASCII", "ignore").decode())
+                .isin(["ATIVO", "INATIVO", "AFASTADO", "FERIAS"]),
+                error="Situação deve ser ATIVO, INATIVO, AFASTADO ou FERIAS",
+            ),
         ],
         nullable=False
     ),

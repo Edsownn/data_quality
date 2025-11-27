@@ -31,7 +31,8 @@ def mapear_codigo_erro(mensagem_erro: str, coluna: str, nullable: bool = False) 
     mensagem_lower = mensagem_erro.lower()
     
     # Verificações de integridade referencial e uniqueness PRIMEIRO
-    if any(termo in mensagem_lower for termo in ["não existe na tabela", "referência", "integridade_referencial"]):
+    # integridade referencial (aceitar várias formas comuns)
+    if any(termo in mensagem_lower for termo in ["não existe na tabela", "não existe", "inexistente", "inexist", "referência", "integridade_referencial"]):
         return "602"
     
     if any(termo in mensagem_lower for termo in ["duplicado", "unique", "duplicates", "único"]):
@@ -107,6 +108,10 @@ def mapear_codigo_erro_pandera(mensagem_erro: str, coluna: str) -> str:
     if "check" in mensagem_lower and "unique" in mensagem_lower:
         return "601"
     
+    # detectar também integridade referencial em mensagens geradas pelo Pandera
+    if any(termo in mensagem_lower for termo in ["não existe", "inexistente", "inexist", "referência", "integridade_referencial"]):
+        return "602"
+
     # Fallback para função padrão
     nullable = eh_campo_opcional(coluna)
     return mapear_codigo_erro(mensagem_erro, coluna, nullable)
