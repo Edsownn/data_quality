@@ -258,7 +258,7 @@ if uploaded_file:
                 if error.column in ["cod_empresa","telefone", "cod_cbo","nome_social",
                                     "trabalho_em_altura", "dt_admissao", "pis_pasep", "rg",
                                     "uf_do_rg", "emissor_rg", "ctps", "serie_ctps", "uf_ctps",
-                                    "endereco", "numero", "bairro", "cidade", "uf", "celular","cep"]:
+                                    "endereco", "numero", "bairro", "cidade", "uf", "celular","cep","inscricao"]:
                     # Erro opcional - adiciona ao relatório
                     adicionar_erro_schema(
                         lista, mensagem_erro, 
@@ -307,7 +307,7 @@ if uploaded_file:
                 if error.column in ["cod_empresa","telefone", "cod_cbo","nome_social",
                                     "trabalho_em_altura", "dt_admissao", "pis_pasep", "rg",
                                     "uf_do_rg", "emissor_rg", "ctps", "serie_ctps", "uf_ctps",
-                                    "endereco", "numero", "bairro", "cidade", "uf", "celular","cep"]:
+                                    "endereco", "numero", "bairro", "cidade", "uf", "celular","cep","inscricao"]:
                     adicionar_erro_schema(
                         lista, mensagem_erro, 
                         aba, linha_excel, error.column, "OPCIONAL"
@@ -375,5 +375,3 @@ if uploaded_file:
         )
     elif not normalized_dfs:
         st.info("Faça upload de uma planilha para começar a validação.")
-
-# settings["DATABASE_DEV_PASSWORD"]

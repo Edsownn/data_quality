@@ -91,7 +91,7 @@ COLUNAS_OPCIONAIS = {
     "trabalho_em_altura", "dt_admissao", "pis_pasep", "rg",
     "uf_do_rg", "emissor_rg", "ctps", "serie_ctps", "uf_ctps",
     "endereco", "numero", "bairro", "cidade", "uf", "celular", "cep",
-    "descricao_detalhada_do_cargo"
+    "descricao_detalhada_do_cargo","inscricao"
 }
 
 def eh_campo_opcional(coluna: str) -> bool:

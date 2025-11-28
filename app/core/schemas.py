@@ -10,8 +10,7 @@ metricas_setores = pa.DataFrameSchema({
             pa.Check(lambda s: s.str.match(r'^[\d\.]+$'), error="Cod Setor deve conter apenas dígitos e pontos"),
             pa.Check(lambda s: s.str.replace('.', '', regex=False).astype(int) > 0, error="Cod Setor deve ser maior que zero"),
         ],
-        nullable=False,
-        unique=True
+        nullable=False
     ),
     "nome_setor": pa.Column(
         pa.String,
@@ -32,7 +31,8 @@ metricas_setores = pa.DataFrameSchema({
     ),
 },
     strict=True, 
-    coerce=True
+    coerce=True,
+    unique=["cod_setor", "cnpj_da_empresa"]  #mesmo setor pode existir em empresas diferentes
 )
 
 metricas_cargos = pa.DataFrameSchema({
@@ -95,7 +95,7 @@ metricas_empresas = pa.DataFrameSchema({
         checks=[
             pa.Check(lambda s: s.notnull(), error="CNAE 7 não pode ser nulo"),
             pa.Check(lambda s: s.str.strip().str.len().between(1, 10), error="CNAE 7 deve ter ate 10 caracteres"),
-            pa.Check.str_matches((r'^\d{7}$'), error="CNAE 7 deve estar no formato XXXXXXX"),
+            pa.Check.str_matches((r'^(?:\d{7}|\d{2}\.\d{2}-\d-\d{2})$'), error="CNAE 7 deve estar no formato XXXXXXX"),
         ],
         nullable=False
     ),
@@ -244,7 +244,8 @@ metricas_funcionarios = pa.DataFrameSchema({
         checks=[
             pa.Check(lambda s: s.str.strip().str.len().between(1, 150), error="Nome Social não pode ser vazio e deve ter até 150 caracteres"),
         ],
-        nullable=True
+        nullable=True,
+        required=False
     ),
     "dt_nascimento": pa.Column(
         pa.DateTime,
